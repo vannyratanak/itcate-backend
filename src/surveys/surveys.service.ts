@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateSurveyDto } from './dto/create-survey.dto';
 import { UpdateSurveyDto } from './dto/update-survey.dto';
 import { PrismaClient } from '@prisma/client';
@@ -51,12 +51,11 @@ export class SurveysService {
   async getFields() {
 
     let bigOption = await this.prisma.groupOption.findMany({
-      orderBy:{
-        id:"asc",
-      },
+      orderBy:[{ sort_order:"asc" }, { id:"asc" }],
       include:{
-        menuOption:true,
+        menuOption:{ orderBy:[{ sort_order:"asc" }, { id:"asc" }] },
         options:{
+          orderBy:{ id:"asc" },
           include:{
             option:true
           }
@@ -72,19 +71,49 @@ export class SurveysService {
     })
     return newSerialize;
   } 
-  findAll() {
-    return `This action returns all surveys`;
+  // Admin: survey responses, newest first, each with its answers resolved to question/option text.
+  async findAll() {
+    const rows = await this.prisma.survayer.findMany({
+      orderBy: { id: 'desc' },
+      include: { survayMessage: true, survayOption: { include: { menuQuestion: true, option: true } } },
+    });
+    return rows.map((r) => this.serialize(r));
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} survey`;
+  async findOne(id: number) {
+    const row = await this.prisma.survayer.findUnique({
+      where: { id },
+      include: { survayMessage: true, survayOption: { include: { menuQuestion: true, option: true } } },
+    });
+    if (!row) throw new NotFoundException(`survey ${id} not found`);
+    return this.serialize(row);
   }
 
-  update(id: number, updateSurveyDto: UpdateSurveyDto) {
-    return `This action updates a #${id} survey`;
+  async remove(id: number) {
+    await this.findOne(id);
+    await this.prisma.$transaction([
+      this.prisma.survayerOption.deleteMany({ where: { survayer_id: id } }),
+      this.prisma.survayerMessage.deleteMany({ where: { survay_id: id } }),
+      this.prisma.survayer.delete({ where: { id } }),
+    ]);
+    return { id };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} survey`;
+  private serialize(r: any) {
+    return {
+      id: r.id,
+      name: r.name,
+      phoneNumber: r.phoneNumber,
+      dateVisit: r.dateVisit,
+      usedToVisit: r.usedToVisit,
+      created_at: r.created_at,
+      message: r.survayMessage[0]?.message ?? null,
+      answers: r.survayOption.map((a) => ({
+        question_en: a.menuQuestion.name_en,
+        question_kh: a.menuQuestion.name_kh,
+        answer_en: a.option.name_en,
+        answer_kh: a.option.name_kh,
+      })),
+    };
   }
 }

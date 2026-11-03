@@ -25,38 +25,23 @@ async function createOption() {
 }
 
 async function createBigOption() {
-    await groupOption.map(async (value: string, index: number) => {
-
-        let option = await prisma.groupOption.create({
-            data: {
-                name: value,
-            }
-        });
-        let result = await Promise.all(optionBigOption[index].map(async val => {
-            return { option_id: (await prisma.option.findFirst({ where: { name_en: val } })).id, group_option_id: option.id }
-        }));
-
+    for (const [index, value] of groupOption.entries()) {
+        const option = await prisma.groupOption.create({ data: { name: value } });
+        const result = [];
+        for (const val of optionBigOption[index]) {
+            result.push({ option_id: (await prisma.option.findFirst({ where: { name_en: val } })).id, group_option_id: option.id });
+        }
         await prisma.groupOptionWithOption.createMany({ data: result });
-
-    });
-}
-async function createBigOptionWithOption() {
-
+    }
 }
 async function main() {
     await createOption();
     await createBigOption();
-    await menu.map(async (value, index) => {
-        await value.map(async (val, i) => {
-            let menuQuestion = await prisma.menuQuestion.create({
-                data: {
-                    name_en: val,
-                    group_option_id: index + 1,
-                }
-            })
-        })
-    })
-
+    for (const [index, value] of menu.entries()) {
+        for (const val of value) {
+            await prisma.menuQuestion.create({ data: { name_en: val, group_option_id: index + 1 } });
+        }
+    }
 }
 main().then(async () => {
     await prisma.$disconnect();

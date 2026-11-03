@@ -1,0 +1,31 @@
+/* Base look for pages made in the page builder. The SAME rules are used in the editor canvas and
+   on the real website (ui/page-base.css in the front end), so the page looks identical in both.
+   Everything is scoped to .itacate-page and spelled out explicitly, so it does not depend on
+   Tailwind's reset or the browser defaults. */
+/* The editor canvas draws the page inside a wrapper div, so drop the browser's default body margin. */
+body { margin: 0; }
+.itacate-page {
+  margin: 0;
+  background: #F3EABF;
+  color: #1f2937;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Khmer OS", sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+.itacate-page *, .itacate-page *::before, .itacate-page *::after { box-sizing: border-box; }
+.itacate-page h1, .itacate-page h2, .itacate-page h3, .itacate-page h4 { margin: 0 0 .5em; line-height: 1.2; font-weight: 700; }
+.itacate-page h1 { font-size: 2.5rem; }
+.itacate-page h2 { font-size: 2rem; }
+.itacate-page h3 { font-size: 1.5rem; }
+.itacate-page h4 { font-size: 1.25rem; }
+.itacate-page p { margin: 0 0 1em; }
+.itacate-page a { color: #E5902C; text-decoration: none; }
+.itacate-page a:hover { text-decoration: underline; }
+.itacate-page img, .itacate-page video, .itacate-page iframe { max-width: 100%; height: auto; border: 0; }
+.itacate-page img { display: block; }
+.itacate-page ul, .itacate-page ol { margin: 0 0 1em; padding-left: 1.5em; }
+.itacate-page ul { list-style: disc; }
+.itacate-page ol { list-style: decimal; }
+.itacate-page hr { border: 0; border-top: 1px solid rgba(229, 144, 44, .35); margin: 1.5em 0; }
+.itacate-page table { border-collapse: collapse; }

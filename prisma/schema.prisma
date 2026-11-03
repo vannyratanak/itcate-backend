@@ -12,6 +12,7 @@ datasource db {
 model GroupOption {
   id         Int                     @id @default(autoincrement())
   name       String
+  sort_order Int                     @default(0)
   created_at DateTime                @default(now())
   updated_at DateTime                @updatedAt
   options    GroupOptionWithOption[]
@@ -41,6 +42,7 @@ model MenuQuestion {
   name_kh         String?
   name_en         String?
   group_option_id Int
+  sort_order      Int              @default(0)
   group_option    GroupOption      @relation(fields: [group_option_id], references: [id])
   menuQuestion    SurvayerOption[]
 
@@ -77,4 +79,52 @@ model SurvayerMessage{
   created_at    DateTime         @default(now())
   updated_at    DateTime         @updatedAt
   survay Survayer @relation(fields: [survay_id],references: [id])
+}
+
+// Single-row table (id is always 1): the shop identity shown on the survey/menu front end.
+model Shop {
+  id         Int      @id @default(1)
+  name       String
+  title      String
+  logo_url   String?
+  updated_at DateTime @updatedAt
+}
+
+model MenuItem {
+  id             Int      @id @default(autoincrement())
+  name_en        String
+  name_kh        String?
+  description_en String?
+  description_kh String?
+  category_id    Int
+  category       MenuCategory @relation(fields: [category_id], references: [id])
+  price          Decimal  @db.Decimal(10, 2)
+  image_url      String?
+  sort_order     Int      @default(0)
+  active         Boolean  @default(true)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+}
+
+model MenuCategory {
+  id         Int        @id @default(autoincrement())
+  name_en    String     @unique
+  name_kh    String?
+  sort_order Int        @default(0)
+  created_at DateTime   @default(now())
+  updated_at DateTime   @updatedAt
+  items      MenuItem[]
+}
+
+// Pages built in the admin's GrapesJS editor and rendered by the front end at /<slug>.
+model Page {
+  id         Int      @id @default(autoincrement())
+  slug       String   @unique
+  title      String
+  project    Json?    // GrapesJS project data, so the editor can reopen the page exactly
+  html       String   @default("") @db.Text
+  css        String   @default("") @db.Text
+  published  Boolean  @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 }

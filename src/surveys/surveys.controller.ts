@@ -1,7 +1,7 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, ParseIntPipe, UseGuards } from '@nestjs/common';
+import { AdminGuard } from '../auth/admin.guard';
 import { SurveysService } from './surveys.service';
 import { CreateSurveyDto } from './dto/create-survey.dto';
-import { UpdateSurveyDto } from './dto/update-survey.dto';
 @Controller('surveys')
 export class SurveysController {
   constructor(private readonly surveysService: SurveysService) {}
@@ -12,6 +12,7 @@ export class SurveysController {
   }
 
   @Get()
+  @UseGuards(AdminGuard)
   findAll() {
     return this.surveysService.findAll();
   }
@@ -22,17 +23,14 @@ export class SurveysController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.surveysService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateSurveyDto: UpdateSurveyDto) {
-    return this.surveysService.update(+id, updateSurveyDto);
+  @UseGuards(AdminGuard)
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.surveysService.findOne(id);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.surveysService.remove(+id);
+  @UseGuards(AdminGuard)
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.surveysService.remove(id);
   }
 }

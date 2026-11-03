@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Itacate Admin</title>
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+  <!-- Sign in -->
+  <div id="auth" class="auth-container hidden">
+    <div class="auth-card">
+      <h1>Sign in</h1>
+      <p class="subtitle">Itacate admin dashboard</p>
+      <div id="auth-error" class="error hidden"></div>
+      <form id="login-form">
+        <label for="username">Username</label>
+        <input id="username" autocomplete="username" required />
+        <label for="password">Password</label>
+        <input id="password" type="password" autocomplete="current-password" required />
+        <button type="submit" class="btn-primary">Sign in</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- App -->
+  <div id="app" class="app hidden">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand"><img id="brand-logo" alt="" class="hidden" /><span id="brand-name">Itacate</span></div>
+      <nav>
+        <a href="#overview" data-view="overview">Overview</a>
+        <a href="#shop" data-view="shop">Shop</a>
+        <a href="#pages" data-view="pages">Pages</a>
+        <a href="#menu" data-view="menu">Menu</a>
+        <a href="#categories" data-view="categories">Categories</a>
+        <a href="#settings" data-view="settings">Survey Settings</a>
+        <a href="#records" data-view="records">Survey Records</a>
+      </nav>
+      <div class="sidebar-footer">
+        <button class="btn-ghost" id="theme-btn" type="button">Light mode</button>
+        <button class="btn-ghost" id="logout-btn" type="button">Sign out</button>
+      </div>
+    </aside>
+    <div class="sidebar-backdrop" id="backdrop"></div>
+
+    <div class="main">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="sidebar-toggle-btn" id="toggle-btn" type="button" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+          <h1 id="view-title">Overview</h1>
+        </div>
+      </header>
+      <main class="content">
+        <div id="banner" class="hidden"></div>
+
+        <section id="view-overview" class="view hidden">
+          <div class="stats" id="stats"></div>
+          <div class="card">
+            <h3>Latest survey responses</h3>
+            <div id="overview-latest"></div>
+          </div>
+        </section>
+
+        <section id="view-shop" class="view hidden">
+          <form id="shop-form" class="card card-narrow">
+            <h3>Shop identity</h3>
+            <p class="hint">Shown on the survey and menu pages.</p>
+            <label for="shop-name">Shop name</label>
+            <input id="shop-name" maxlength="120" required />
+            <label for="shop-title">Shop title</label>
+            <input id="shop-title" maxlength="120" required />
+            <label>Shop logo</label>
+            <div id="shop-logo-picker"></div>
+            <button type="submit" class="btn-primary">Save changes</button>
+          </form>
+        </section>
+
+        <section id="view-categories" class="view hidden">
+          <div class="toolbar">
+            <p class="hint intro">Menu items are grouped under these categories. Drag <span class="grip-inline">⠿</span> to change the order they appear on the menu page.</p>
+            <button class="btn-primary" type="button" id="cat-new">New category</button>
+          </div>
+          <div class="card cat-card">
+            <ul id="cat-list" class="cat-list"></ul>
+            <p class="empty hidden" id="cat-empty">No categories yet.</p>
+          </div>
+        </section>
+
+        <section id="view-pages" class="view hidden">
+          <div class="toolbar">
+            <p class="hint intro">Design your own pages with drag and drop. Published pages appear on your website at their address, and a page called <b>home</b> replaces the front page.</p>
+            <button class="btn-primary" type="button" id="page-new">New page</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Title</th><th>Address</th><th>Status</th><th>Last saved</th><th></th></tr></thead>
+              <tbody id="pages-body"></tbody>
+            </table>
+            <p class="empty hidden" id="pages-empty">No pages yet. Create your first one.</p>
+          </div>
+        </section>
+
+        <section id="view-editor" class="view hidden">
+          <div class="ed-wrap">
+            <div class="ed-bar">
+              <button class="btn-ghost small" type="button" id="ed-back">← Pages</button>
+              <input id="ed-title" class="ed-title" maxlength="120" aria-label="Page title" />
+              <span class="ed-url" id="ed-url"></span>
+              <span class="ed-spacer"></span>
+              <div class="seg" id="ed-devices" role="group" aria-label="Preview size">
+                <button type="button" data-device="Desktop" class="on" title="Desktop">Desktop</button>
+                <button type="button" data-device="Tablet" title="Tablet">Tablet</button>
+                <button type="button" data-device="Mobile" title="Mobile">Mobile</button>
+              </div>
+              <button class="btn-ghost small" type="button" id="ed-undo" title="Undo (Ctrl+Z)">Undo</button>
+              <button class="btn-ghost small" type="button" id="ed-redo" title="Redo (Ctrl+Shift+Z)">Redo</button>
+              <label class="ed-publish"><button class="switch" type="button" role="switch" id="ed-published" aria-label="Published"><span class="knob"></span></button><span id="ed-published-label"></span></label>
+              <a class="btn-ghost small" id="ed-view" target="_blank" rel="noopener">View live ↗</a>
+              <button class="btn-primary small" type="button" id="ed-save">Save</button>
+            </div>
+            <div class="ed-body">
+              <aside class="ed-side ed-left">
+                <div class="seg" id="ed-left-tabs"><button type="button" data-pane="ed-blocks" class="on">Blocks</button><button type="button" data-pane="ed-layers">Layers</button></div>
+                <div id="ed-blocks" class="ed-pane"></div>
+                <div id="ed-layers" class="ed-pane hidden"></div>
+              </aside>
+              <div id="gjs"></div>
+              <aside class="ed-side ed-right">
+                <div class="seg" id="ed-right-tabs"><button type="button" data-pane="ed-styles" class="on">Style</button><button type="button" data-pane="ed-traits">Settings</button></div>
+                <div id="ed-styles" class="ed-pane"><p class="hint ed-hint" id="ed-style-hint">Click anything on the page to style it.</p></div>
+                <div id="ed-traits" class="ed-pane hidden"></div>
+              </aside>
+            </div>
+          </div>
+        </section>
+
+        <section id="view-menu" class="view hidden">
+          <div class="toolbar">
+            <input id="menu-search" class="search" placeholder="Search menu..." />
+            <button class="btn-primary" id="menu-new" type="button">New menu item</button>
+          </div>
+          <div class="table-wrap">
+            <table id="menu-table">
+              <thead><tr><th></th><th></th><th>Name</th><th>Category</th><th>Price</th><th>Visible</th><th></th></tr></thead>
+              <tbody id="menu-body"></tbody>
+            </table>
+            <p class="empty hidden" id="menu-empty">No menu items yet.</p>
+          </div>
+        </section>
+
+        <section id="view-records" class="view hidden">
+          <div class="toolbar">
+            <input id="survey-search" class="search" placeholder="Search by name or phone..." />
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>ID</th><th>Name</th><th>Phone</th><th>Visited</th><th>Submitted</th><th></th></tr></thead>
+              <tbody id="survey-body"></tbody>
+            </table>
+            <p class="empty hidden" id="survey-empty">No survey responses yet.</p>
+          </div>
+        </section>
+
+        <section id="view-settings" class="view hidden">
+          <div class="toolbar">
+            <p class="hint intro">Each answer scale is a set of choices (e.g. Agree → Disagree). Add the questions that use it, and they appear on the survey form in this order.</p>
+            <button class="btn-primary" type="button" id="scale-new">New answer scale</button>
+          </div>
+          <div id="question-list"></div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="modal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+    <div class="modal">
+      <h3 id="modal-title"></h3>
+      <div id="modal-body"></div>
+      <div class="modal-actions" id="modal-actions"></div>
+    </div>
+  </div>
+
+  <script src="select-enhance.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

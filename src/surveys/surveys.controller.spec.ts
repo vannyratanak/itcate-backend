@@ -3,6 +3,7 @@ import { SurveysController } from './surveys.controller';
 import { SurveysService } from './surveys.service';
 import { PrismaService } from 'src/prisma.service';
 import { PrismaClient } from '@prisma/client';
+import { AdminGuard } from '../auth/admin.guard';
 
 describe('SurveysController', () => {
   let controller: SurveysController;
@@ -11,7 +12,10 @@ describe('SurveysController', () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [SurveysController],
       providers: [SurveysService,PrismaService,PrismaClient],
-    }).compile();
+    })
+      .overrideGuard(AdminGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
     controller = module.get<SurveysController>(SurveysController);
   });
