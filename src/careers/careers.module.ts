@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
+import { CareersController } from './careers.controller';
+import { CareersService } from './careers.service';
 
-// Owned by the "careers" feature. Add controllers/providers here (this file and src/careers/ only).
-@Module({ controllers: [], providers: [PrismaService] })
+// Owned by the "careers" feature. (AuthModule is global, so AdminGuard works without importing anything.)
+@Module({ controllers: [CareersController], providers: [CareersService, PrismaService] })
 export class CareersModule {}
