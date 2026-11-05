@@ -1,38 +1,45 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { SurveysService } from './surveys.service';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Query, UseGuards } from '@nestjs/common';
+import { AdminGuard } from '../auth/admin.guard';
 import { CreateSurveyDto } from './dto/create-survey.dto';
-import { UpdateSurveyDto } from './dto/update-survey.dto';
+import { SurveysService } from './surveys.service';
+
 @Controller('surveys')
 export class SurveysController {
   constructor(private readonly surveysService: SurveysService) {}
 
+  // --- public: used by the survey form ---
   @Post()
   create(@Body() createSurveyDto: CreateSurveyDto) {
     return this.surveysService.create(createSurveyDto);
   }
 
-  @Get()
-  findAll() {
-    return this.surveysService.findAll();
-  }
-
-  @Get('/field')
-  getField(){
+  @Get('field')
+  getField() {
     return this.surveysService.getFields();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.surveysService.findOne(+id);
+  // --- admin only (x-admin-key header): responses contain names and phone numbers ---
+  @Get()
+  @UseGuards(AdminGuard)
+  findAll(@Query('page') page?: string, @Query('limit') limit?: string) {
+    return this.surveysService.findAll(Number(page) || 1, Number(limit) || 20);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateSurveyDto: UpdateSurveyDto) {
-    return this.surveysService.update(+id, updateSurveyDto);
+  @Get('stats')
+  @UseGuards(AdminGuard)
+  stats() {
+    return this.surveysService.stats();
+  }
+
+  @Get(':id')
+  @UseGuards(AdminGuard)
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.surveysService.findOne(id);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.surveysService.remove(+id);
+  @UseGuards(AdminGuard)
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.surveysService.remove(id);
   }
 }

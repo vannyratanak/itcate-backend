@@ -1,6 +1,5 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateSurveyDto } from './dto/create-survey.dto';
-import { UpdateSurveyDto } from './dto/update-survey.dto';
 import { PrismaClient } from '@prisma/client';
 @Injectable()
 export class SurveysService {
@@ -72,19 +71,77 @@ export class SurveysService {
     })
     return newSerialize;
   } 
-  findAll() {
-    return `This action returns all surveys`;
+  async findAll(page = 1, limit = 20) {
+    const take = Math.min(Math.max(Math.trunc(limit) || 20, 1), 100);
+    const pg = Math.max(Math.trunc(page) || 1, 1);
+    const [total, items] = await this.prisma.$transaction([
+      this.prisma.survayer.count(),
+      this.prisma.survayer.findMany({
+        orderBy: { id: 'desc' },
+        skip: (pg - 1) * take,
+        take,
+        select: { id: true, name: true, phoneNumber: true, dateVisit: true, usedToVisit: true, created_at: true },
+      }),
+    ]);
+    return { items, total, page: pg, limit: take, pages: Math.ceil(total / take) };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} survey`;
+  async findOne(id: number) {
+    const s = await this.prisma.survayer.findUnique({
+      where: { id },
+      include: {
+        survayMessage: { select: { message: true, created_at: true } },
+        survayOption: { include: { menuQuestion: true, option: true }, orderBy: { menu_id: 'asc' } },
+      },
+    });
+    if (!s) throw new NotFoundException(`survey ${id} not found`);
+    const { survayOption, survayMessage, ...rest } = s;
+    return {
+      ...rest,
+      message: survayMessage[0]?.message ?? null,
+      answers: survayOption.map((a) => ({
+        menu_id: a.menu_id,
+        question: { name_en: a.menuQuestion.name_en, name_kh: a.menuQuestion.name_kh },
+        option_id: a.option_id,
+        answer: { name_en: a.option.name_en, name_kh: a.option.name_kh },
+      })),
+    };
   }
 
-  update(id: number, updateSurveyDto: UpdateSurveyDto) {
-    return `This action updates a #${id} survey`;
+  /** Totals and, per question, how many picked each option. */
+  async stats() {
+    const [total, usedToVisit, grouped, questions, options] = await Promise.all([
+      this.prisma.survayer.count(),
+      this.prisma.survayer.count({ where: { usedToVisit: true } }),
+      this.prisma.survayerOption.groupBy({ by: ['menu_id', 'option_id'], _count: { _all: true } }),
+      this.prisma.menuQuestion.findMany({ orderBy: { id: 'asc' } }),
+      this.prisma.option.findMany(),
+    ]);
+    const optName = new Map(options.map((o) => [o.id, o.name_en ?? o.name_kh ?? String(o.id)]));
+    return {
+      total,
+      usedToVisit,
+      newVisitors: total - usedToVisit,
+      questions: questions.map((q) => ({
+        menu_id: q.id,
+        name_en: q.name_en,
+        name_kh: q.name_kh,
+        answers: grouped
+          .filter((g) => g.menu_id === q.id)
+          .map((g) => ({ option_id: g.option_id, name: optName.get(g.option_id), count: g._count._all }))
+          .sort((a, b) => a.option_id - b.option_id),
+      })),
+    };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} survey`;
+  async remove(id: number) {
+    const exists = await this.prisma.survayer.findUnique({ where: { id }, select: { id: true } });
+    if (!exists) throw new NotFoundException(`survey ${id} not found`);
+    await this.prisma.$transaction([
+      this.prisma.survayerOption.deleteMany({ where: { survayer_id: id } }),
+      this.prisma.survayerMessage.deleteMany({ where: { survay_id: id } }),
+      this.prisma.survayer.delete({ where: { id } }),
+    ]);
+    return { deleted: id };
   }
 }

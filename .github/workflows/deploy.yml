@@ -24,6 +24,7 @@ jobs:
           yarn install --frozen-lockfile --ignore-scripts
           npx prisma generate
           yarn build
+          yarn vitest run src/auth
 
   deploy:
     needs: build
