@@ -1,7 +1,7 @@
 // Itacate admin dashboard: a static page that talks to the backend's JSON API with a JWT.
 (() => {
-  // Same origin as the backend. Behind nginx the whole backend lives under /backend/, so follow whatever prefix the page was loaded from.
-  const API = location.pathname.startsWith('/backend/') ? '/backend' : '';
+  // Local dev: the page and the API share the backend's origin. In production nginx serves the API at /api/ on the same host.
+  const API = ['localhost', '127.0.0.1'].includes(location.hostname) ? '' : '/api';
   const $ = (id) => document.getElementById(id);
 
   // Build DOM with textContent only: survey answers are user-submitted, never inject them as HTML.
