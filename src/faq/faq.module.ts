@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
+import { FaqController } from './faq.controller';
+import { FaqService } from './faq.service';
 
-// Owned by the "faq" feature. Add controllers/providers here (this file and src/faq/ only).
-@Module({ controllers: [], providers: [PrismaService] })
+// Owned by the "faq" feature.
+@Module({ controllers: [FaqController], providers: [FaqService, PrismaService] })
 export class FaqModule {}
