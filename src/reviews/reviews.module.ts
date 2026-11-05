@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
+import { ReviewsController } from './reviews.controller';
+import { ReviewsService } from './reviews.service';
 
-// Owned by the "reviews" feature. Add controllers/providers here (this file and src/reviews/ only).
-@Module({ controllers: [], providers: [PrismaService] })
+@Module({ controllers: [ReviewsController], providers: [ReviewsService, PrismaService] })
 export class ReviewsModule {}
