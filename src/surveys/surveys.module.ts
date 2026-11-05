@@ -5,6 +5,6 @@ import { PrismaClient } from '@prisma/client';
 
 @Module({
   controllers: [SurveysController],
-  providers: [SurveysService,PrismaClient]
+  providers: [SurveysService]
 })
 export class SurveysModule {}

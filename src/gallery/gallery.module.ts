@@ -4,5 +4,5 @@ import { GalleryController } from './gallery.controller';
 import { GalleryService } from './gallery.service';
 
 // Owned by the "gallery" feature.
-@Module({ controllers: [GalleryController], providers: [GalleryService, PrismaService] })
+@Module({ controllers: [GalleryController], providers: [GalleryService] })
 export class GalleryModule {}

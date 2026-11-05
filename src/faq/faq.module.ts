@@ -4,5 +4,5 @@ import { FaqController } from './faq.controller';
 import { FaqService } from './faq.service';
 
 // Owned by the "faq" feature.
-@Module({ controllers: [FaqController], providers: [FaqService, PrismaService] })
+@Module({ controllers: [FaqController], providers: [FaqService] })
 export class FaqModule {}

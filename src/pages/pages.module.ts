@@ -3,5 +3,5 @@ import { PrismaService } from '../prisma.service';
 import { PagesController } from './pages.controller';
 import { PagesService } from './pages.service';
 
-@Module({ controllers: [PagesController], providers: [PagesService, PrismaService] })
+@Module({ controllers: [PagesController], providers: [PagesService] })
 export class PagesModule {}

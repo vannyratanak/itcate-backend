@@ -13,7 +13,7 @@ import { AuthStateService } from './auth-state.service';
     }),
   ],
   controllers: [AuthController],
-  providers: [AdminGuard, AuthStateService, PrismaService],
+  providers: [AdminGuard, AuthStateService],
   exports: [JwtModule, AdminGuard, AuthStateService],
 })
 export class AuthModule {}

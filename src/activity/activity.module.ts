@@ -7,6 +7,6 @@ import { ActivityInterceptor } from './activity.interceptor';
 // Owned by the "activity" feature: the audit log (owner only) and the global interceptor that fills it.
 @Module({
   controllers: [ActivityController],
-  providers: [PrismaService, { provide: APP_INTERCEPTOR, useClass: ActivityInterceptor }],
+  providers: [{ provide: APP_INTERCEPTOR, useClass: ActivityInterceptor }],
 })
 export class ActivityModule {}

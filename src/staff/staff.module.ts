@@ -4,5 +4,5 @@ import { StaffController } from './staff.controller';
 import { StaffService } from './staff.service';
 
 // Owned by the "staff" feature: admin accounts and roles (owner only).
-@Module({ controllers: [StaffController], providers: [StaffService, PrismaService] })
+@Module({ controllers: [StaffController], providers: [StaffService] })
 export class StaffModule {}
