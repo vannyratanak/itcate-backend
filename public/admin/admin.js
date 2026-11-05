@@ -145,17 +145,63 @@
   const LOAD_PLUGINS = {};
   const LOAD = {
     async overview() {
-      [shop, menu, surveys] = await Promise.all([api('/shop'), api('/menu/all'), api('/surveys')]);
+      const [shopData, o] = await Promise.all([api('/shop'), api('/analytics/overview')]);
+      shop = shopData;
       applyBrand();
-      const stat = (n, l) => h('div', { class: 'stat' }, h('div', { class: 'n' }, String(n)), h('div', { class: 'l' }, l));
+      const NS = 'http://www.w3.org/2000/svg';
+      const svg = (tag, attrs = {}, ...kids) => {
+        const el = document.createElementNS(NS, tag);
+        for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+        el.append(...kids);
+        return el;
+      };
+      // ---- stat cards ----
+      const trend = (cur, prev) => {
+        if (!cur && !prev) return h('div', { class: 'trend flat' }, 'No responses in the last 14 days');
+        if (!prev) return h('div', { class: 'trend up' }, `▲ ${cur} new this week`);
+        const pct = Math.round(((cur - prev) / prev) * 100);
+        const cls = pct > 0 ? 'up' : pct < 0 ? 'down' : 'flat';
+        return h('div', { class: `trend ${cls}` }, `${pct > 0 ? '▲' : pct < 0 ? '▼' : '='} ${Math.abs(pct)}% vs previous 7 days (${cur} vs ${prev})`);
+      };
+      const stat = (n, l, extra, href) => h(href ? 'a' : 'div', { class: `stat${href ? ' stat-link' : ''}`, ...(href ? { href } : {}) },
+        h('div', { class: 'n' }, String(n)), h('div', { class: 'l' }, l), extra || '');
+      const s = o.surveys;
       $('stats').replaceChildren(
-        stat(surveys.length, 'Survey responses'),
-        stat(menu.filter((m) => m.active).length, 'Menu items visible'),
-        stat(menu.length - menu.filter((m) => m.active).length, 'Menu items hidden'),
+        stat(s.total, 'Survey responses', trend(s.last7, s.prev7), '#records'),
+        stat(s.avgScore === null ? '–' : `${s.avgScore.toFixed(1)} / 5`, 'Average satisfaction', h('div', { class: 'trend flat' }, 'All questions, all time'), '#analytics'),
+        stat(o.reservationsToday, "Today's reservations", h('div', { class: `trend ${o.reservationsPending ? 'down' : 'flat'}` }, `${o.reservationsPending} awaiting confirmation`), '#reservations'),
+        stat(o.unreadMessages, 'Unread messages', h('div', { class: 'trend flat' }, o.unreadMessages ? 'Open the inbox' : 'All caught up'), '#messages'),
+        stat(o.menu.active, 'Menu items visible', h('div', { class: 'trend flat' }, `${o.menu.hidden} hidden`), '#menu'),
       );
-      const latest = surveys.slice(0, 5);
+      // ---- 30-day bar chart (inline SVG, themed with the dashboard variables) ----
+      const days = o.perDay, W = 720, H = 190, ml = 30, mb = 24, mt = 10;
+      const total = days.reduce((a, d) => a + d.count, 0);
+      const peak = days.reduce((a, d) => (d.count > a.count ? d : a), days[0] || { count: 0, date: '' });
+      const max = Math.max(2, Math.ceil(Math.max(...days.map((d) => d.count), 0) / 2) * 2);
+      const plotH = H - mt - mb, slot = (W - ml) / days.length, bw = Math.max(3, slot * 0.68);
+      const summary = total
+        ? `Survey responses per day, last ${days.length} days: ${total} in total. Busiest day ${peak.date} with ${peak.count}.`
+        : `No survey responses in the last ${days.length} days.`;
+      const chart = svg('svg', { viewBox: `0 0 ${W} ${H}`, class: 'ov-svg', role: 'img', 'aria-label': summary },
+        svg('title', {}, summary),
+        ...[0, 0.5, 1].map((f) => svg('g', {},
+          svg('line', { x1: ml, x2: W, y1: mt + plotH * (1 - f), y2: mt + plotH * (1 - f), class: 'ov-grid-line' }),
+          svg('text', { x: ml - 6, y: mt + plotH * (1 - f) + 4, class: 'ov-axis', 'text-anchor': 'end' }, String(Math.round(max * f))))),
+        ...days.map((d, i) => {
+          const bh = (d.count / max) * plotH;
+          return svg('rect', { x: ml + i * slot + (slot - bw) / 2, y: mt + plotH - bh, width: bw, height: Math.max(bh, d.count ? 2 : 0), rx: 2, class: 'ov-bar' },
+            svg('title', {}, `${d.date}: ${d.count} response${d.count === 1 ? '' : 's'}`));
+        }),
+        ...days.map((d, i) => (i % 5 === 0 || i === days.length - 1)
+          ? svg('text', { x: i === days.length - 1 ? W - 2 : ml + i * slot + slot / 2, y: H - 6, class: 'ov-axis', 'text-anchor': i === days.length - 1 ? 'end' : 'middle' }, d.date.slice(5)) : ''));
+      $('ov-chart').replaceChildren(chart, h('p', { class: 'hint ov-summary' }, summary));
+      // ---- latest responses ----
+      const latest = o.latest;
       $('overview-latest').replaceChildren(latest.length
-        ? h('table', {}, h('tbody', {}, latest.map((s) => h('tr', {}, h('td', {}, s.name), h('td', {}, s.phoneNumber), h('td', {}, when(s.created_at))))))
+        ? h('div', { class: 'table-wrap' }, h('table', {}, h('tbody', {}, latest.map((r) => h('tr', {},
+            h('td', {}, r.name), h('td', {}, r.phoneNumber),
+            h('td', {}, h('span', { class: 'badge count' }, r.usedToVisit ? 'Returning' : 'New')),
+            h('td', {}, when(r.created_at)))))))
         : h('p', { class: 'empty' }, 'No survey responses yet.'));
     },
 
