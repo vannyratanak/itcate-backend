@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
+import { MessagesController } from './messages.controller';
+import { MessagesService } from './messages.service';
 
-// Owned by the "messages" feature. Add controllers/providers here (this file and src/messages/ only).
-@Module({ controllers: [], providers: [PrismaService] })
+@Module({ controllers: [MessagesController], providers: [MessagesService, PrismaService] })
 export class MessagesModule {}
