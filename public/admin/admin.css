@@ -324,3 +324,5 @@ dl.answers dd { margin: 0; font-weight: 600; text-align: right; }
 .ed-wrap .gjs-block__media { display: flex; justify-content: center; }
 .ed-wrap .gjs-block svg { width: 34px; height: 34px; }
 .ed-wrap .gjs-block-label { font-size: 12px; margin-top: 4px; }
+
+.sidebar nav .nav-group { margin: 14px 12px 4px; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; opacity: .5; }

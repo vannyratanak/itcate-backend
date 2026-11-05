@@ -75,6 +75,7 @@ model SurvayerMessage{
   id  Int @id @default(autoincrement())
   survay_id Int
   message String?
+  approved Boolean @default(false) // shown on the public Reviews page once an admin approves it
   location Json?  
   created_at    DateTime         @default(now())
   updated_at    DateTime         @updatedAt
@@ -100,6 +101,8 @@ model MenuItem {
   category       MenuCategory @relation(fields: [category_id], references: [id])
   price          Decimal  @db.Decimal(10, 2)
   image_url      String?
+  tags           String[] @default([])   // e.g. spicy, vegetarian, vegan, halal, gluten-free
+  chefs_pick     Boolean  @default(false)
   sort_order     Int      @default(0)
   active         Boolean  @default(true)
   created_at     DateTime @default(now())
@@ -127,4 +130,152 @@ model Page {
   published  Boolean  @default(false)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
+}
+
+
+// ===================== Site expansion =====================
+
+// One row (id = 1): contact details, opening hours and social links shown across the site.
+model SiteSetting {
+  id         Int      @id @default(1)
+  phone      String?
+  email      String?
+  address_en String?
+  address_kh String?
+  map_url    String?   // Google Maps link
+  map_embed  String?   // Google Maps embed src
+  facebook   String?
+  instagram  String?
+  telegram   String?
+  tiktok     String?
+  hours      Json?     // [{ day: 0-6 (Mon=0), open: "10:00", close: "22:00", closed: false }]
+  notice     String?   // optional banner text, e.g. holiday closure
+  updated_at DateTime @updatedAt
+}
+
+model Reservation {
+  id         Int      @id @default(autoincrement())
+  name       String
+  phone      String
+  email      String?
+  party_size Int
+  date       DateTime @db.Date
+  time       String   // "19:00"
+  notes      String?
+  status     String   @default("pending") // pending | confirmed | declined | cancelled
+  admin_note String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  @@index([date])
+}
+
+model BlockedDate {
+  id     Int      @id @default(autoincrement())
+  date   DateTime @unique @db.Date
+  reason String?
+}
+
+// Inbox for every public form: kind = contact | catering | gift_card | career
+model ContactMessage {
+  id         Int      @id @default(autoincrement())
+  kind       String   @default("contact")
+  name       String
+  email      String?
+  phone      String?
+  subject    String?
+  message    String
+  data       Json?     // form-specific extras (event date, guests, job_id, amount...)
+  status     String   @default("new") // new | read | replied | archived
+  created_at DateTime @default(now())
+  @@index([kind, status])
+}
+
+model Job {
+  id             Int      @id @default(autoincrement())
+  title_en       String
+  title_kh       String?
+  type_en        String?   // Full-time, Part-time...
+  type_kh        String?
+  description_en String?
+  description_kh String?
+  active         Boolean  @default(true)
+  sort_order     Int      @default(0)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+}
+
+model GalleryImage {
+  id         Int      @id @default(autoincrement())
+  url        String
+  caption_en String?
+  caption_kh String?
+  sort_order Int      @default(0)
+  active     Boolean  @default(true)
+  created_at DateTime @default(now())
+}
+
+// kind = offer | event
+model Offer {
+  id         Int       @id @default(autoincrement())
+  kind       String    @default("offer")
+  title_en   String
+  title_kh   String?
+  body_en    String?
+  body_kh    String?
+  image_url  String?
+  starts_at  DateTime?
+  ends_at    DateTime?
+  active     Boolean   @default(true)
+  sort_order Int       @default(0)
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+}
+
+model Faq {
+  id          Int      @id @default(autoincrement())
+  question_en String
+  question_kh String?
+  answer_en   String
+  answer_kh   String?
+  sort_order  Int      @default(0)
+  active      Boolean  @default(true)
+}
+
+model BlogPost {
+  id           Int       @id @default(autoincrement())
+  slug         String    @unique
+  title_en     String
+  title_kh     String?
+  excerpt_en   String?
+  excerpt_kh   String?
+  cover_url    String?
+  html_en      String    @default("")
+  html_kh      String?
+  published    Boolean   @default(false)
+  published_at DateTime?
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+}
+
+// Staff logins. The ADMIN_USER/ADMIN_PASSWORD from .env stays as the "owner" bootstrap login.
+model AdminUser {
+  id            Int       @id @default(autoincrement())
+  username      String    @unique
+  password_hash String
+  role          String    @default("viewer") // owner | manager | viewer
+  active        Boolean   @default(true)
+  created_at    DateTime  @default(now())
+  last_login_at DateTime?
+}
+
+model ActivityLog {
+  id         Int      @id @default(autoincrement())
+  actor      String
+  role       String?
+  method     String
+  path       String
+  status     Int
+  summary    String?
+  created_at DateTime @default(now())
+  @@index([created_at])
 }

@@ -94,7 +94,27 @@
 
   // ---------- Views ----------
   const TITLES = { overview: 'Overview', shop: 'Shop', pages: 'Pages', editor: 'Edit page', menu: 'Menu', categories: 'Categories', settings: 'Survey Settings', records: 'Survey Records' };
+
+  // ---------- Plug-in sections (public/admin/sections/*.js push into window.ADMIN_SECTIONS) ----------
+  // A section is { id, label, group?, async load(container, kit) }. admin.js creates its nav link, <section> and route.
+  // `kit` gives sections the same helpers the built-in screens use.
+  // Plug-in sections (public/admin/sections/*.js push { id, label, group?, load(container, kit) } into window.ADMIN_SECTIONS).
+  let pluginsReady = false;
+  function initPlugins() {
+    if (pluginsReady) return; pluginsReady = true;
+    const SECTION_KIT = { api, h, $, notify, guard, openModal, closeModal, confirmModal, cancelBtn, sortable, saveOrder, grip, plural, imgUrl, money, when, API };
+    for (const sec of window.ADMIN_SECTIONS || []) {
+      TITLES[sec.id] = sec.label;
+      const el = h('section', { id: `view-${sec.id}`, class: 'view hidden' });
+      document.querySelector('main.content').append(el);
+      const nav = document.querySelector('.sidebar nav');
+      if (sec.group && !nav.querySelector(`[data-group="${sec.group}"]`)) nav.append(h('div', { class: 'nav-group', 'data-group': sec.group }, sec.group));
+      nav.append(h('a', { href: `#${sec.id}`, 'data-view': sec.id }, sec.label));
+      LOAD_PLUGINS[sec.id] = () => sec.load(el, SECTION_KIT);
+    }
+  }
   async function route() {
+    initPlugins();
     let [view, arg] = location.hash.slice(1).split('/');
     if (view === 'surveys') view = 'records'; // old bookmark
     if (!TITLES[view] || view === 'editor') view = 'overview';
@@ -112,7 +132,7 @@
     document.querySelector('main.content').classList.toggle('editing', view === 'editor');
     $('view-title').textContent = TITLES[view];
     toggleSidebar(false);
-    await guard(LOAD[view])(arg);
+    await guard(LOAD[view] || LOAD_PLUGINS[view])(arg);
   }
 
   function applyBrand() {
@@ -122,6 +142,7 @@
     document.title = `${shop.name} Admin`;
   }
 
+  const LOAD_PLUGINS = {};
   const LOAD = {
     async overview() {
       [shop, menu, surveys] = await Promise.all([api('/shop'), api('/menu/all'), api('/surveys')]);
