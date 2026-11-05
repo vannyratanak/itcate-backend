@@ -5,7 +5,9 @@ type CategoryDto = { name_en?: string; name_kh?: string | null };
 type MenuDto = {
   name_en?: string; name_kh?: string | null; description_en?: string | null; description_kh?: string | null;
   category_id?: number; price?: number | string; image_url?: string | null; sort_order?: number; active?: boolean;
+  tags?: string[]; chefs_pick?: boolean;
 };
+export const MENU_TAGS = ['spicy', 'vegetarian', 'vegan', 'halal', 'gluten-free', 'new'];
 
 const optText = (v: unknown, field: string, max: number) => {
   if (v === null || v === '') return null;
@@ -121,6 +123,16 @@ export class MenuService {
     if (dto.active !== undefined) {
       if (typeof dto.active !== 'boolean') throw new BadRequestException('active must be a boolean');
       data.active = dto.active;
+    }
+    if (dto.chefs_pick !== undefined) {
+      if (typeof dto.chefs_pick !== 'boolean') throw new BadRequestException('chefs_pick must be a boolean');
+      data.chefs_pick = dto.chefs_pick;
+    }
+    if (dto.tags !== undefined) {
+      if (!Array.isArray(dto.tags) || dto.tags.some((t) => !MENU_TAGS.includes(t))) {
+        throw new BadRequestException(`tags must be a list from: ${MENU_TAGS.join(', ')}`);
+      }
+      data.tags = Array.from(new Set(dto.tags));
     }
     return data;
   }
