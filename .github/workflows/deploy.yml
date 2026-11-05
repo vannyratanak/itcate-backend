@@ -1,0 +1,53 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [master]
+
+concurrency:
+  group: deploy-itcate-backend
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install, generate Prisma client, build
+        env:
+          DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+        run: |
+          yarn install --frozen-lockfile --ignore-scripts
+          npx prisma generate
+          yarn build
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push to the VPS (post-receive hook installs, builds, restarts and health-checks; rolls back on failure)
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          set -e
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy && chmod 600 ~/.ssh/deploy
+          printf '%s\n' "$VPS_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          GIT_SSH_COMMAND="ssh -i ~/.ssh/deploy -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes" \
+            git push "ssh://root@${VPS_HOST}/srv/git/itcate-backend.git" HEAD:refs/heads/main
+
+      - name: Live smoke test
+        run: |
+          set -e
+          sleep 5
+          curl -s -o /dev/null -w "%{http_code}\n" https://itacate.vannyratanakchheang.info/ | grep -q 200 && echo "live site OK"

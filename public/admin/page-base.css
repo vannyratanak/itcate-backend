@@ -14,18 +14,22 @@ body { margin: 0; }
   -webkit-font-smoothing: antialiased;
 }
 .itacate-page *, .itacate-page *::before, .itacate-page *::after { box-sizing: border-box; }
-.itacate-page h1, .itacate-page h2, .itacate-page h3, .itacate-page h4 { margin: 0 0 .5em; line-height: 1.2; font-weight: 700; }
-.itacate-page h1 { font-size: 2.5rem; }
-.itacate-page h2 { font-size: 2rem; }
-.itacate-page h3 { font-size: 1.5rem; }
-.itacate-page h4 { font-size: 1.25rem; }
-.itacate-page p { margin: 0 0 1em; }
-.itacate-page a { color: #E5902C; text-decoration: none; }
-.itacate-page a:hover { text-decoration: underline; }
-.itacate-page img, .itacate-page video, .itacate-page iframe { max-width: 100%; height: auto; border: 0; }
-.itacate-page img { display: block; }
-.itacate-page ul, .itacate-page ol { margin: 0 0 1em; padding-left: 1.5em; }
-.itacate-page ul { list-style: disc; }
-.itacate-page ol { list-style: decimal; }
-.itacate-page hr { border: 0; border-top: 1px solid rgba(229, 144, 44, .35); margin: 1.5em 0; }
-.itacate-page table { border-collapse: collapse; }
+.itacate-page h1:not([data-live] *), .itacate-page h2:not([data-live] *), .itacate-page h3:not([data-live] *), .itacate-page h4:not([data-live] *) { margin: 0 0 .5em; line-height: 1.2; font-weight: 700; }
+.itacate-page h1:not([data-live] *) { font-size: 2.5rem; }
+.itacate-page h2:not([data-live] *) { font-size: 2rem; }
+.itacate-page h3:not([data-live] *) { font-size: 1.5rem; }
+.itacate-page h4:not([data-live] *) { font-size: 1.25rem; }
+.itacate-page p:not([data-live] *) { margin: 0 0 1em; }
+.itacate-page a:not([data-live] *) { color: #E5902C; text-decoration: none; }
+.itacate-page a:hover:not([data-live] *) { text-decoration: underline; }
+.itacate-page img:not([data-live] *), .itacate-page video:not([data-live] *), .itacate-page iframe:not([data-live] *) { max-width: 100%; height: auto; border: 0; }
+.itacate-page img:not([data-live] *) { display: block; }
+.itacate-page ul:not([data-live] *), .itacate-page ol:not([data-live] *) { margin: 0 0 1em; padding-left: 1.5em; }
+.itacate-page ul:not([data-live] *) { list-style: disc; }
+.itacate-page ol:not([data-live] *) { list-style: decimal; }
+.itacate-page hr:not([data-live] *) { border: 0; border-top: 1px solid rgba(229, 144, 44, .35); margin: 1.5em 0; }
+.itacate-page table:not([data-live] *) { border-collapse: collapse; }
+
+/* Live components (menu, language buttons) are drawn by the website, not by the builder:
+   they get a normal page's defaults instead of the builder's typography. */
+.itacate-page [data-live] { color: #000; line-height: 1.5; }

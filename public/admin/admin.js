@@ -639,10 +639,18 @@
         style: { padding: '28px', border: `2px dashed ${BRAND}`, 'border-radius': '12px', 'text-align': 'center', color: BRAND, 'font-weight': '600' },
         components: 'Your live menu appears here' } },
     });
+    editor.DomComponents.addType('itacate-language', {
+      isComponent: (el) => el.getAttribute && el.getAttribute('data-itacate') === 'language' && { type: 'itacate-language' },
+      model: { defaults: { name: 'Language buttons', droppable: false, editable: false,
+        attributes: { 'data-itacate': 'language' },
+        style: { padding: '14px 28px', border: `2px dashed ${BRAND}`, 'border-radius': '12px', 'text-align': 'center', color: BRAND, 'font-weight': '600' },
+        components: 'ខ្មែរ · English buttons appear here' } },
+    });
     const add = (id, label, category, content, icon) => editor.Blocks.add(id, { label, category, content, media: icon, select: true });
     const ico = (d) => `<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
     add('hero', 'Hero', 'Sections', `<section style="padding:90px 20px;text-align:center"><h1 style="color:${BRAND};font-size:46px">Welcome to our restaurant</h1><p style="font-size:18px;max-width:640px;margin:0 auto 26px">Tell your guests what makes this place special.</p><a href="/menu" style="display:inline-block;background:${BRAND};color:${CREAM};padding:13px 30px;border-radius:8px;font-weight:700;text-decoration:none">See our menu</a></section>`, ico('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 10h10M9 14h6"/>'));
     add('live-menu', 'Live menu', 'Restaurant', { type: 'itacate-menu' }, ico('<path d="M5 3v8a2 2 0 0 0 2 2v8M9 3v6M19 3c-2 2-3 5-3 8h3v10"/>'));
+    add('language', 'Language buttons', 'Restaurant', { type: 'itacate-language' }, ico('<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>'));
     add('survey-btn', 'Survey button', 'Restaurant', `<div style="text-align:center;padding:24px"><a href="/survey" style="display:inline-block;background:${BRAND};color:${CREAM};padding:13px 30px;border-radius:8px;font-weight:700;text-decoration:none">Take our survey</a></div>`, ico('<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/>'));
     add('heading', 'Heading', 'Text', `<h2 style="color:${BRAND}">Your heading</h2>`, ico('<path d="M6 5v14M18 5v14M6 12h12"/>'));
     add('paragraph', 'Paragraph', 'Text', '<p>Write something here. Double-click to edit this text.</p>', ico('<path d="M4 7h16M4 12h16M4 17h10"/>'));
@@ -700,6 +708,7 @@
     registerBlocks(gjs);
     gjs.getWrapper().addClass('itacate-page'); // same base look as the real site
     if (page.project) gjs.loadProjectData(page.project);
+    else if (page.html) { gjs.setComponents(page.html); if (page.css) gjs.addStyle(page.css); } // page saved without editor data (e.g. created via the API)
     else gjs.setComponents(`<section style="padding:90px 20px;text-align:center"><h1 style="color:${BRAND}">${page.title.replace(/[<>&]/g, '')}</h1><p>Drag blocks from the left to build this page.</p></section>`);
 
     const state = pageEditor = { gjs, slug, dirty: false, published: page.published };
