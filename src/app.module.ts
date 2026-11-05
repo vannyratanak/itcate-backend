@@ -21,13 +21,14 @@ import { BlogModule } from './blog/blog.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { StaffModule } from './staff/staff.module';
 import { ActivityModule } from './activity/activity.module';
+import { ReviewsModule } from './reviews/reviews.module';
 import { PrismaService } from './prisma.service';
 
 
 @Module({
   imports: [ConfigModule.forRoot({
     envFilePath: [".env", ".env.development", ".env.development.local"]
-  }), UsersModule, SurveysModule, AuthModule, ShopModule, MenuModule, UploadsModule, SurveyConfigModule, PagesModule, SettingsModule, ReservationsModule, MessagesModule, CareersModule, GalleryModule, OffersModule, FaqModule, BlogModule, AnalyticsModule, StaffModule, ActivityModule ],
+  }), UsersModule, SurveysModule, AuthModule, ShopModule, MenuModule, UploadsModule, SurveyConfigModule, PagesModule, SettingsModule, ReservationsModule, MessagesModule, CareersModule, GalleryModule, OffersModule, FaqModule, BlogModule, AnalyticsModule, StaffModule, ActivityModule, ReviewsModule ],
   controllers: [AppController],
   providers: [AppService,PrismaService],
 
