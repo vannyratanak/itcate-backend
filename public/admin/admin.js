@@ -342,7 +342,8 @@
       out.push(h('tr', q ? {} : { 'data-id': m.id, 'data-group': m.category_id },
         h('td', { class: 'grip-cell' }, q ? '' : grip(m.name_en)),
         h('td', {}, m.image_url ? h('img', { class: 'thumb', src: imgUrl(m.image_url), alt: '' }) : h('div', { class: 'thumb' })),
-        h('td', { class: 'wrap' }, m.name_en, m.name_kh ? h('div', { class: 'hint', style: 'margin:2px 0 0' }, m.name_kh) : ''),
+        h('td', { class: 'wrap' }, m.chefs_pick ? h('span', { class: 'badge', title: "Chef's pick", style: 'margin-right:6px' }, '★ Chef') : '', m.name_en, m.name_kh ? h('div', { class: 'hint', style: 'margin:2px 0 0' }, m.name_kh) : '',
+          (m.tags || []).length ? h('div', { class: 'chips', style: 'margin-top:4px' }, (m.tags || []).map((t) => h('span', { class: 'badge count' }, t))) : ''),
         h('td', {}, m.category),
         h('td', {}, money(m.price)),
         statusCell(m),
@@ -363,6 +364,7 @@
   $('menu-search').addEventListener('input', renderMenu);
   $('menu-new').addEventListener('click', () => menuModal(null));
 
+  const MENU_TAGS = ['spicy', 'vegetarian', 'vegan', 'halal', 'gluten-free', 'new'];
   function menuModal(item) {
     if (!categories.length) { notify('Create a category first (Categories tab).', false); return; }
     const f = (id, label, val = '', attrs = {}) => [h('label', { for: id }, label), h('input', { id, value: val ?? '', ...attrs })];
@@ -379,6 +381,11 @@
         h('div', {}, f('m-price', 'Price ($)', item?.price ?? '', { type: 'number', min: 0, step: '0.01', required: true }))),
       h('label', {}, 'Photo'),
       imagePicker({ url: imageUrl, onChange: (u) => { imageUrl = u; } }),
+      h('label', {}, 'Tags'),
+      h('div', { class: 'chips', style: 'margin-bottom:12px', role: 'group', 'aria-label': 'Tags' },
+        MENU_TAGS.map((t) => h('div', { class: 'check', style: 'margin-right:12px' },
+          h('input', { id: `m-tag-${t}`, type: 'checkbox', 'data-tag': t, checked: (item?.tags || []).includes(t) }), h('label', { for: `m-tag-${t}` }, t)))),
+      h('div', { class: 'check' }, h('input', { id: 'm-chef', type: 'checkbox', checked: !!item?.chefs_pick }), h('label', { for: 'm-chef' }, "Chef's pick (featured on the home page)")),
       h('div', { class: 'check' }, h('input', { id: 'm-active', type: 'checkbox', checked: item ? item.active : true }), h('label', { for: 'm-active' }, 'Visible on the menu')));
     const save = h('button', { class: 'btn-primary', type: 'button', onclick: guard(async () => {
       const payload = {
@@ -386,6 +393,8 @@
         description_en: $('m-desc-en').value || null, description_kh: $('m-desc-kh').value || null,
         category_id: parseInt($('m-category').value, 10), price: $('m-price').value,
         image_url: imageUrl, active: $('m-active').checked,
+        chefs_pick: $('m-chef').checked,
+        tags: MENU_TAGS.filter((t) => $(`m-tag-${t}`).checked),
       };
       await (item ? api(`/menu/${item.id}`, 'PATCH', payload) : api('/menu', 'POST', payload));
       closeModal(); notify(item ? 'Menu item saved' : 'Menu item created'); await LOAD.menu();
