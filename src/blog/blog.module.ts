@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
+import { BlogController } from './blog.controller';
+import { BlogService } from './blog.service';
 
-// Owned by the "blog" feature. Add controllers/providers here (this file and src/blog/ only).
-@Module({ controllers: [], providers: [PrismaService] })
+@Module({ controllers: [BlogController], providers: [BlogService, PrismaService] })
 export class BlogModule {}
