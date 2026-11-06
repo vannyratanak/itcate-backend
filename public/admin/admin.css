@@ -468,3 +468,11 @@ main.content, .main { min-width: 0; }
   .content { padding: 16px; }
   .topbar { padding: 0 16px; }
 }
+
+/* Page editor on phones: stacked panels with real heights, the page scrolls */
+@media (max-width: 860px) {
+  .ed-wrap { height: auto; min-height: calc(100vh - var(--topbar-height)); }
+  .ed-body { flex: none; grid-template-rows: 300px 480px 340px; }
+  .ed-side, .ed-right { max-height: none; border: 0; border-top: 1px solid var(--border); }
+  .ed-bar { position: sticky; top: var(--topbar-height); z-index: 15; box-shadow: var(--shadow-sm); }
+}
