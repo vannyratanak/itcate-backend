@@ -107,11 +107,29 @@
       TITLES[sec.id] = sec.label;
       const el = h('section', { id: `view-${sec.id}`, class: 'view hidden' });
       document.querySelector('main.content').append(el);
-      const nav = document.querySelector('.sidebar nav');
-      if (sec.group && !nav.querySelector(`[data-group="${sec.group}"]`)) nav.append(h('div', { class: 'nav-group', 'data-group': sec.group }, sec.group));
-      nav.append(h('a', { href: `#${sec.id}`, 'data-view': sec.id }, sec.label));
+      document.querySelector('.sidebar nav').append(h('a', { href: `#${sec.id}`, 'data-view': sec.id }, sec.label));
       LOAD_PLUGINS[sec.id] = () => sec.load(el, SECTION_KIT);
     }
+
+    // One sidebar layout for every tab, built-in or plug-in. Unknown ids go to the end.
+    const NAV_LAYOUT = [
+      { items: ['overview'] },
+      { group: 'Website', items: ['shop', 'hours-contact', 'pages', 'blog', 'gallery', 'faq', 'offers'] },
+      { group: 'Menu', items: ['menu', 'categories'] },
+      { group: 'Guests', items: ['reservations', 'messages', 'careers'] },
+      { group: 'Surveys', items: ['settings', 'records', 'analytics', 'reviews'] },
+      { group: 'Admin', items: ['staff', 'activity'] },
+    ];
+    const nav = document.querySelector('.sidebar nav');
+    const links = new Map([...nav.querySelectorAll('a[data-view]')].map((a) => [a.dataset.view, a]));
+    nav.replaceChildren();
+    for (const g of NAV_LAYOUT) {
+      const found = g.items.filter((v) => links.has(v));
+      if (!found.length) continue;
+      if (g.group) nav.append(h('div', { class: 'nav-group' }, g.group));
+      for (const v of found) { nav.append(links.get(v)); links.delete(v); }
+    }
+    for (const a of links.values()) nav.append(a);
   }
   async function route() {
     initPlugins();
