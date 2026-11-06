@@ -126,10 +126,34 @@
     for (const g of NAV_LAYOUT) {
       const found = g.items.filter((v) => links.has(v));
       if (!found.length) continue;
-      if (g.group) nav.append(h('div', { class: 'nav-group' }, g.group));
-      for (const v of found) { nav.append(links.get(v)); links.delete(v); }
+      if (!g.group) { for (const v of found) { nav.append(links.get(v)); links.delete(v); } continue; }
+      // A foldable group: heading button + the list of tabs. Open/closed is remembered; the group of the current tab opens itself.
+      const box = h('div', { class: 'nav-items', 'data-group': g.group });
+      for (const v of found) { box.append(links.get(v)); links.delete(v); }
+      const head = h('button', { class: 'nav-group', type: 'button', 'data-group': g.group, 'aria-expanded': 'false' }, h('span', {}, g.group), h('span', { class: 'chev', 'aria-hidden': 'true' }, '▾'));
+      head.addEventListener('click', () => setGroupOpen(g.group, box.hidden));
+      nav.append(head, box);
     }
     for (const a of links.values()) nav.append(a);
+    const saved = (() => { try { return JSON.parse(localStorage.getItem('itacate_admin_nav') || '[]'); } catch { return []; } })();
+    for (const g of NAV_LAYOUT) if (g.group) setGroupOpen(g.group, saved.includes(g.group), false);
+  }
+  function setGroupOpen(group, open, remember = true) {
+    const box = document.querySelector(`.nav-items[data-group="${group}"]`);
+    const head = document.querySelector(`.nav-group[data-group="${group}"]`);
+    if (!box || !head) return;
+    box.hidden = !open;
+    head.setAttribute('aria-expanded', String(open));
+    if (!remember) return;
+    try {
+      const now = new Set(JSON.parse(localStorage.getItem('itacate_admin_nav') || '[]'));
+      open ? now.add(group) : now.delete(group);
+      localStorage.setItem('itacate_admin_nav', JSON.stringify([...now]));
+    } catch { /* storage unavailable: folding still works for this visit */ }
+  }
+  function openGroupOf(view) {
+    const box = document.querySelector(`.sidebar nav a[data-view="${view}"]`)?.closest('.nav-items');
+    if (box && box.hidden) setGroupOpen(box.dataset.group, true, false);
   }
   async function route() {
     initPlugins();
@@ -147,6 +171,7 @@
     if (view !== 'editor') closePageEditor();
     document.querySelectorAll('.view').forEach((v) => v.classList.toggle('hidden', v.id !== `view-${view}`));
     document.querySelectorAll('.sidebar nav a').forEach((a) => a.classList.toggle('active', a.dataset.view === (view === 'editor' ? 'pages' : view)));
+    openGroupOf(view === 'editor' ? 'pages' : view);
     document.querySelector('main.content').classList.toggle('editing', view === 'editor');
     $('view-title').textContent = TITLES[view];
     toggleSidebar(false);
