@@ -1,6 +1,6 @@
 // Admin section: Hours & Contact (SiteSetting). Owned by the "settings" feature.
 (window.ADMIN_SECTIONS = window.ADMIN_SECTIONS || []).push({
-  id: 'settings', label: 'Hours & Contact', group: 'Site',
+  id: 'hours-contact', label: 'Hours & Contact', group: 'Site',
   async load(el, kit) {
     const { h, api, notify, guard } = kit;
     const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
