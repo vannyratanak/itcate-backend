@@ -483,3 +483,12 @@ main.content, .main { min-width: 0; }
   .row-actions { flex-wrap: wrap; margin-left: auto; }
   .sr-range { flex-wrap: wrap; }
 }
+
+/* Pop-ups on phones: tighter, buttons always reachable, notice below the top bar */
+@media (max-width: 860px) {
+  .modal-backdrop { padding: 10px; align-items: flex-end; }
+  .modal { padding: 18px 16px 0; max-height: 92vh; border-radius: 16px 16px 12px 12px; }
+  .modal-actions { position: sticky; bottom: 0; z-index: 2; flex-wrap: wrap; margin: 8px -16px 0; padding: 12px 16px; background: var(--surface); border-top: 1px solid var(--border); box-shadow: 0 -8px 16px rgba(0,0,0,.08); }
+  .modal-actions > * { flex: 1 1 auto; text-align: center; }
+  #banner { top: calc(var(--topbar-height) + 8px); left: 12px; right: 12px; max-width: none; }
+}
