@@ -476,3 +476,10 @@ main.content, .main { min-width: 0; }
   .ed-side, .ed-right { max-height: none; border: 0; border-top: 1px solid var(--border); }
   .ed-bar { position: sticky; top: var(--topbar-height); z-index: 15; box-shadow: var(--shadow-sm); }
 }
+
+/* Rows with action buttons wrap on phones instead of pushing buttons off-screen */
+@media (max-width: 860px) {
+  :has(> .row-actions) { flex-wrap: wrap; }
+  .row-actions { flex-wrap: wrap; margin-left: auto; }
+  .sr-range { flex-wrap: wrap; }
+}
