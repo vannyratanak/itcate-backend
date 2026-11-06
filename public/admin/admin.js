@@ -99,6 +99,70 @@
   // A section is { id, label, group?, async load(container, kit) }. admin.js creates its nav link, <section> and route.
   // `kit` gives sections the same helpers the built-in screens use.
   // Plug-in sections (public/admin/sections/*.js push { id, label, group?, load(container, kit) } into window.ADMIN_SECTIONS).
+
+  // ---------- Header text, "View on site" links and sidebar icons ----------
+  const SITE = ['localhost', '127.0.0.1'].includes(location.hostname) ? 'http://localhost:3000' : '';
+  const PAGE_INFO = {
+    overview: ['A quick look at how your restaurant is doing.'],
+    shop: ['Your restaurant name, tagline and logo.', '/'],
+    'hours-contact': ['Phone, address, social links and opening hours.', '/contact'],
+    pages: ['Build your own pages with drag and drop.', '/'],
+    blog: ['News and stories for your Blog page.', '/blog'],
+    gallery: ['Photos shown on your Gallery page.', '/gallery'],
+    faq: ['Questions and answers your guests see.', '/faq'],
+    offers: ['Promotions and events. They hide themselves when they end.', '/offers'],
+    menu: ['Your dishes, prices and photos.', '/menu'],
+    categories: ['Menu sections and the order they appear in.', '/menu'],
+    reservations: ['Table bookings that guests make on your website.', '/reservations'],
+    messages: ['Everything sent from your contact, catering, gift card and job forms.', '/contact'],
+    careers: ['Open positions shown on your Careers page.', '/careers'],
+    settings: ['The survey questions and answer choices.', '/survey'],
+    records: ['Every survey response, one by one.'],
+    analytics: ['Scores and trends from your survey responses.'],
+    reviews: ['Choose which survey comments are shown to the public.', '/reviews'],
+    staff: ['Staff logins and what each person is allowed to do.'],
+    activity: ['Who changed what, and every sign-in.'],
+    editor: ['Design this page, then publish it.'],
+  };
+  function updateHeader(view) {
+    const info = PAGE_INFO[view] || [];
+    $('view-sub').textContent = info[0] || '';
+    const link = $('view-site');
+    link.classList.toggle('hidden', !info[1]);
+    if (info[1]) link.href = SITE + info[1];
+    $('site-link').href = SITE + '/';
+  }
+  const ICONS = {
+    overview: 'M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z',
+    shop: 'M3 9l1-5h16l1 5 M4 9v11h16V9 M9 20v-6h6v6',
+    'hours-contact': 'M12 7v5l3 2 M12 21a9 9 0 100-18 9 9 0 000 18z',
+    pages: 'M6 3h9l4 4v14H6z M14 3v5h5',
+    blog: 'M4 20h4L19 9l-4-4L4 16z',
+    gallery: 'M3 5h18v14H3z M3 16l5-5 4 4 3-3 6 6 M8.5 9.5h.01',
+    faq: 'M12 21a9 9 0 100-18 9 9 0 000 18z M9.5 9a2.5 2.5 0 115 0c0 1.5-2.5 2-2.5 3.5 M12 17h.01',
+    offers: 'M3 12l9-9h8v8l-9 9z M16 8h.01',
+    menu: 'M5 3v8a3 3 0 003 3v7 M8 3v6 M19 3c-2 2-3 5-3 8h3v10',
+    categories: 'M8 6h13 M8 12h13 M8 18h13 M3 6h.01 M3 12h.01 M3 18h.01',
+    reservations: 'M4 5h16v16H4z M4 10h16 M9 3v4 M15 3v4',
+    messages: 'M3 5h18v14H3z M3 7l9 6 9-6',
+    careers: 'M3 8h18v12H3z M9 8V5h6v3',
+    settings: 'M4 6h10 M18 6h2 M4 12h4 M12 12h8 M4 18h12 M14 4v4 M8 10v4 M16 16v4',
+    records: 'M8 4h8v3H8z M6 5h12v16H6z M9 12h6 M9 16h6',
+    analytics: 'M4 20V10 M10 20V4 M16 20v-7 M22 20H2',
+    reviews: 'M12 3l2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z',
+    staff: 'M16 20v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2 M9.5 10a3.5 3.5 0 100-7 3.5 3.5 0 000 7z M21 20v-2a4 4 0 00-3-3.9 M16 3.1a3.5 3.5 0 010 6.8',
+    activity: 'M3 12a9 9 0 109-9 M3 4v5h5 M12 7v5l3 2',
+  };
+  function addNavIcons() {
+    const NS = 'http://www.w3.org/2000/svg';
+    document.querySelectorAll('.sidebar nav a[data-view]').forEach((a) => {
+      const d = ICONS[a.dataset.view]; if (!d || a.querySelector('.nav-ico')) return;
+      const svg = document.createElementNS(NS, 'svg');
+      svg.setAttribute('viewBox', '0 0 24 24'); svg.setAttribute('class', 'nav-ico'); svg.setAttribute('aria-hidden', 'true');
+      for (const seg of d.split(' M')) { const path = document.createElementNS(NS, 'path'); path.setAttribute('d', (seg.startsWith('M') ? '' : 'M') + seg); svg.append(path); }
+      a.prepend(svg);
+    });
+  }
   let pluginsReady = false;
   function initPlugins() {
     if (pluginsReady) return; pluginsReady = true;
@@ -135,6 +199,9 @@
       nav.append(head, box);
     }
     for (const a of links.values()) nav.append(a);
+    addNavIcons();
+    // Sections rewrite their own link (unread / pending badges); put the icon back whenever that happens.
+    new MutationObserver(() => addNavIcons()).observe(nav, { childList: true, subtree: true });
     const saved = (() => { try { return JSON.parse(localStorage.getItem('itacate_admin_nav') || '[]'); } catch { return []; } })();
     for (const g of NAV_LAYOUT) if (g.group) setGroupOpen(g.group, saved.includes(g.group), false);
   }
@@ -174,6 +241,7 @@
     openGroupOf(view === 'editor' ? 'pages' : view);
     document.querySelector('main.content').classList.toggle('editing', view === 'editor');
     $('view-title').textContent = TITLES[view];
+    updateHeader(view);
     toggleSidebar(false);
     await guard(LOAD[view] || LOAD_PLUGINS[view])(arg);
   }
@@ -694,6 +762,32 @@
   // ---------- Pages (list) ----------
   let pages = [], frontendUrl = '';
   const slugify = (s) => s.toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60);
+
+
+  // ---------- Overview: "Your website at a glance" (counts + quick add) ----------
+  const _overview = LOAD.overview;
+  LOAD.overview = async function (...args) {
+    await _overview.apply(this, args);
+    const list = (r) => (Array.isArray(r) ? r : r?.items ?? null);
+    const get = (path) => api(path).then(list).catch(() => null);
+    const [menuItems, photos, offers, faqs, posts, jobs] = await Promise.all([get('/menu/all'), get('/gallery/all'), get('/offers/all'), get('/faq/all'), get('/blog/all/list'), get('/careers/all')]);
+    const cards = [
+      ['Menu dishes', menuItems && menuItems.filter((m) => m.active).length, 'menu', 'Add a dish'],
+      ['Gallery photos', photos?.filter((p) => p.active).length, 'gallery', 'Add photos'],
+      ['Offers & events', offers?.filter((o) => o.active).length, 'offers', 'Add an offer'],
+      ['FAQ answers', faqs?.filter((f) => f.active).length, 'faq', 'Add a question'],
+      ['Blog posts', posts?.filter((p) => p.published).length, 'blog', 'Write a post'],
+      ['Open jobs', jobs?.filter((j) => j.active).length, 'careers', 'Add a job'],
+    ];
+    const box = $('view-overview');
+    let card = $('glance');
+    if (!card) { card = h('div', { class: 'card', id: 'glance' }); box.append(card); }
+    card.replaceChildren(
+      h('h3', {}, 'Your website at a glance'),
+      h('p', { class: 'hint' }, 'What visitors can see right now. Click a card to manage it.'),
+      h('div', { class: 'glance' }, ...cards.map(([label, n, view, cta]) => h('a', { class: `glance-card${n === 0 ? ' is-empty' : ''}`, href: `#${view}` },
+        h('div', { class: 'n' }, n == null ? '–' : String(n)), h('div', { class: 'l' }, label), h('div', { class: 'cta' }, n === 0 ? `${cta} →` : 'Manage →')))));
+  };
 
   LOAD.pages = async function () {
     [pages, { frontend_url: frontendUrl }] = await Promise.all([api('/pages'), api('/pages/config')]);

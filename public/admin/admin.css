@@ -352,3 +352,23 @@ dl.answers dd { margin: 0; font-weight: 600; text-align: right; }
 .sidebar nav .nav-group[aria-expanded="false"] .chev { transform: rotate(-90deg); }
 .sidebar nav .nav-items { display: flex; flex-direction: column; gap: 4px; }
 .sidebar nav .nav-items[hidden] { display: none; }
+
+/* ---- Friendlier header, icons, empty states, overview glance ---- */
+.topbar { justify-content: space-between; gap: 16px; }
+.topbar-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.view-sub { margin: 0; font-size: 12.5px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.view-site { text-decoration: none; white-space: nowrap; font-size: 13px; }
+.sidebar nav a { display: flex; align-items: center; gap: 10px; }
+.nav-ico { width: 17px; height: 17px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; opacity: .85; }
+.site-link { text-decoration: none; text-align: center; font-size: 13px; }
+.empty { border: 1px dashed var(--border); border-radius: 12px; margin: 14px; padding: 34px 20px; background: color-mix(in srgb, var(--surface-2) 45%, transparent); }
+.empty.hidden { display: none; }
+.glance { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-top: 12px; }
+.glance-card { display: block; padding: 14px 16px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-2); color: var(--text); text-decoration: none; transition: border-color .15s, transform .15s; }
+.glance-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+.glance-card .n { font-size: 26px; font-weight: 700; }
+.glance-card .l { color: var(--text-dim); font-size: 13px; }
+.glance-card .cta { margin-top: 8px; font-size: 12.5px; color: var(--accent); font-weight: 600; }
+.glance-card.is-empty { border-style: dashed; }
+.glance-card.is-empty .n { color: var(--text-dim); }
+@media (max-width: 720px) { .view-sub { display: none; } .view-site { padding: 7px 10px; } }

@@ -37,6 +37,7 @@
         <a href="#records" data-view="records">Survey Records</a>
       </nav>
       <div class="sidebar-footer">
+        <a class="btn-ghost site-link" id="site-link" target="_blank" rel="noopener">View website ↗</a>
         <button class="btn-ghost" id="theme-btn" type="button">Light mode</button>
         <button class="btn-ghost" id="logout-btn" type="button">Sign out</button>
       </div>
@@ -47,8 +48,12 @@
       <header class="topbar">
         <div class="topbar-left">
           <button class="sidebar-toggle-btn" id="toggle-btn" type="button" aria-label="Toggle menu"><span></span><span></span><span></span></button>
-          <h1 id="view-title">Overview</h1>
+          <div class="topbar-text">
+            <h1 id="view-title">Overview</h1>
+            <p id="view-sub" class="view-sub"></p>
+          </div>
         </div>
+        <a id="view-site" class="btn-ghost small view-site hidden" target="_blank" rel="noopener">View on site ↗</a>
       </header>
       <main class="content">
         <div id="banner" class="hidden"></div>
