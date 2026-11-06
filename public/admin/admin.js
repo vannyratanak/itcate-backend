@@ -305,7 +305,9 @@
         }),
         ...days.map((d, i) => (i % 5 === 0 || i === days.length - 1)
           ? svg('text', { x: i === days.length - 1 ? W - 2 : ml + i * slot + slot / 2, y: H - 6, class: 'ov-axis', 'text-anchor': i === days.length - 1 ? 'end' : 'middle' }, d.date.slice(5)) : ''));
-      $('ov-chart').replaceChildren(chart, h('p', { class: 'hint ov-summary' }, summary));
+      $('ov-chart').replaceChildren(...(total
+        ? [chart, h('p', { class: 'hint ov-summary' }, summary)]
+        : [h('p', { class: 'empty' }, 'No survey responses in the last 30 days yet. When guests complete the survey, a daily chart appears here.')]));
       // ---- latest responses ----
       const latest = o.latest;
       $('overview-latest').replaceChildren(latest.length
