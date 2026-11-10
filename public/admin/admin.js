@@ -19,11 +19,26 @@
   let token = localStorage.getItem('itacate_admin_token');
   let pageEditor = null, shop = null, menu = [], surveys = [], groups = [], categories = [];
 
+  // Cloudflare Access protects /admin. When its login session expires it answers API calls with a redirect to
+  // cloudflareaccess.com, which fetch() can't follow (the browser reports a CORS error). With redirect: 'manual'
+  // that redirect comes back as an "opaqueredirect" response, so we can tell the user instead of failing silently.
+  const ACCESS_EXPIRED = 'Your Cloudflare session expired. Reload the page to sign in again.';
+  function showAccessExpired() {
+    if ($('access-expired')) return;
+    document.body.prepend(h('div', { id: 'access-expired', role: 'alert' },
+      h('span', {}, ACCESS_EXPIRED), h('button', { type: 'button', onclick: () => location.reload() }, 'Reload')));
+  }
+  async function apiFetch(url, options = {}) {
+    const res = await fetch(url, { ...options, redirect: 'manual' });
+    if (res.type === 'opaqueredirect') { showAccessExpired(); throw new Error(ACCESS_EXPIRED); }
+    return res;
+  }
+
   async function api(path, method = 'GET', body, isForm) {
     const headers = {};
     if (token) headers.Authorization = `Bearer ${token}`;
     if (body && !isForm) headers['Content-Type'] = 'application/json';
-    const res = await fetch(API + path, { method, headers, body: isForm ? body : body ? JSON.stringify(body) : undefined });
+    const res = await apiFetch(API + path, { method, headers, body: isForm ? body : body ? JSON.stringify(body) : undefined });
     const data = await res.json().catch(() => ({}));
     if (res.status === 401 && token) { signOut(); throw new Error('Session expired, please sign in again'); }
     if (!res.ok) throw new Error([].concat(data.message || res.statusText).join(', '));
@@ -166,7 +181,7 @@
   let pluginsReady = false;
   function initPlugins() {
     if (pluginsReady) return; pluginsReady = true;
-    const SECTION_KIT = { api, h, $, notify, guard, openModal, closeModal, confirmModal, cancelBtn, sortable, saveOrder, grip, plural, imgUrl, money, when, API };
+    const SECTION_KIT = { api, apiFetch, h, $, notify, guard, openModal, closeModal, confirmModal, cancelBtn, sortable, saveOrder, grip, plural, imgUrl, money, when, API };
     for (const sec of window.ADMIN_SECTIONS || []) {
       TITLES[sec.id] = sec.label;
       const el = h('section', { id: `view-${sec.id}`, class: 'view hidden' });

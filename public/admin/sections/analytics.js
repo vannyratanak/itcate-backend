@@ -44,7 +44,7 @@
   (window.ADMIN_SECTIONS = window.ADMIN_SECTIONS || []).push({
     id: 'analytics', label: 'Survey Results', group: 'Insights',
     async load(el, kit) {
-      const { h, api, notify, guard, API } = kit;
+      const { h, api, apiFetch, notify, guard, API } = kit;
       const state = el._state || (el._state = { preset: 30, from: daysAgo(29), to: daysAgo(0) });
       const body = h('div', {});
       const fromIn = h('input', { type: 'date', value: state.from, 'aria-label': 'From date' });
@@ -54,7 +54,7 @@
       } }, `Last ${n} days`));
       const apply = () => { state.preset = null; state.from = fromIn.value; state.to = toIn.value; render(); };
       const csvBtn = h('button', { class: 'btn-ghost', type: 'button', onclick: guard(async () => {
-        const res = await fetch(`${API}/analytics/survey.csv?from=${state.from}&to=${state.to}`, { headers: { Authorization: `Bearer ${localStorage.getItem('itacate_admin_token')}` } });
+        const res = await apiFetch(`${API}/analytics/survey.csv?from=${state.from}&to=${state.to}`, { headers: { Authorization: `Bearer ${localStorage.getItem('itacate_admin_token')}` } });
         if (!res.ok) throw new Error((await res.json().catch(() => ({}))).message || 'Could not export');
         const url = URL.createObjectURL(await res.blob());
         const a = h('a', { href: url, download: `survey-${state.from}_${state.to}.csv` });

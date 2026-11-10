@@ -141,6 +141,18 @@ dl.answers dd { margin: 0; font-weight: 600; text-align: right; }
 
 #banner { position: fixed; top: 16px; right: 16px; z-index: 60; max-width: 360px; }
 
+/* Shown when the Cloudflare Access session has expired (see apiFetch in admin.js) */
+#access-expired {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  padding: 10px 16px; background: #c0392b; color: #fff; font-size: 14px;
+}
+#access-expired button {
+  padding: 4px 12px; border: 1px solid rgba(255,255,255,.7); border-radius: 6px;
+  background: transparent; color: #fff; cursor: pointer; font: inherit;
+}
+#access-expired button:hover { background: rgba(255,255,255,.18); }
+
 @media (max-width: 860px) {
   .sidebar { position: fixed; left: 0; top: 0; z-index: 40; transform: translateX(-100%); transition: transform .2s; }
   .sidebar.open { transform: none; }
