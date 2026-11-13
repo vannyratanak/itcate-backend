@@ -21,6 +21,7 @@ import { BlogModule } from './blog/blog.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { StaffModule } from './staff/staff.module';
 import { ActivityModule } from './activity/activity.module';
+import { RevalidateModule } from './revalidate/revalidate.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { PrismaModule } from './prisma.module';
 
@@ -28,7 +29,7 @@ import { PrismaModule } from './prisma.module';
 @Module({
   imports: [PrismaModule, ConfigModule.forRoot({
     envFilePath: [".env", ".env.development", ".env.development.local"]
-  }), UsersModule, SurveysModule, AuthModule, ShopModule, MenuModule, UploadsModule, SurveyConfigModule, PagesModule, SettingsModule, ReservationsModule, MessagesModule, CareersModule, GalleryModule, OffersModule, FaqModule, BlogModule, AnalyticsModule, StaffModule, ActivityModule, ReviewsModule ],
+  }), UsersModule, SurveysModule, AuthModule, ShopModule, MenuModule, UploadsModule, SurveyConfigModule, PagesModule, SettingsModule, ReservationsModule, MessagesModule, CareersModule, GalleryModule, OffersModule, FaqModule, BlogModule, AnalyticsModule, StaffModule, ActivityModule, ReviewsModule, RevalidateModule ],
   controllers: [AppController],
   providers: [AppService],
 

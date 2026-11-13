@@ -39,7 +39,7 @@ export class ReservationsService {
     const av = await this.availability(fmtDate(input.date), input.party_size);
     const slot = av.slots.find((s) => s.time === input.time);
     if (!av.open) throw new BadRequestException('We are not taking bookings for that date');
-    if (!slot) throw new BadRequestException('That time is outside opening hours');
+    if (!slot) throw new BadRequestException('That time is outside our opening hours. Please pick another time.');
     if (!slot.available) throw new BadRequestException('Sorry, that time is no longer available. Please pick another one.');
     const r = await this.prisma.reservation.create({
       data: { name: input.name, phone: input.phone, email: input.email, party_size: input.party_size, date: input.date, time: input.time, notes: input.notes },

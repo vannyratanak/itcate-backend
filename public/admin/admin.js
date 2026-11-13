@@ -41,8 +41,18 @@
     const res = await apiFetch(API + path, { method, headers, body: isForm ? body : body ? JSON.stringify(body) : undefined });
     const data = await res.json().catch(() => ({}));
     if (res.status === 401 && token) { signOut(); throw new Error('Session expired, please sign in again'); }
-    if (!res.ok) throw new Error([].concat(data.message || res.statusText).join(', '));
+    if (!res.ok) throw new Error([].concat(data.message || res.statusText).map(friendly).join(' '));
     return data;
+  }
+
+  // Nielsen 9: say what is wrong, in plain words, and how to fix it. Messages that are already sentences pass through.
+  function friendly(msg) {
+    const name = (f) => f.replace(/_(en|kh)$/, (_, l) => (l === 'en' ? ' (English)' : ' (Khmer)')).replace(/_/g, ' ').replace(/^./, (c) => c.toUpperCase());
+    let m;
+    if ((m = /^(\w+) is required(?: \(max (\d+) characters\))?$/.exec(msg))) return `Please fill in “${name(m[1])}”.`;
+    if ((m = /^(\w+) is invalid(?: \(max ([\d,]+) characters\))?$/.exec(msg))) return `“${name(m[1])}” doesn’t look right${m[2] ? ` (up to ${m[2]} characters)` : ''}. Please check it and try again.`;
+    if ((m = /^(\w+) (?:is|are) too long \(max (\d+) characters\)$/.exec(msg))) return `“${name(m[1])}” is too long. Please keep it under ${m[2]} characters.`;
+    return msg;
   }
 
   function notify(msg, ok = true) {
@@ -50,7 +60,8 @@
     b.className = ok ? 'success' : 'error';
     b.textContent = msg;
     clearTimeout(notify.t);
-    notify.t = setTimeout(() => b.classList.add('hidden'), 3500);
+    // errors stay longer: people need time to read what went wrong
+    notify.t = setTimeout(() => b.classList.add('hidden'), ok ? 3500 : 9000);
   }
   const guard = (fn) => async (...a) => { try { await fn(...a); } catch (e) { notify(e.message, false); } };
 
@@ -90,14 +101,33 @@
   $('backdrop').addEventListener('click', () => toggleSidebar(false));
 
   // ---------- Modal ----------
+  let modalReturn = null; // the control that opened the dialog: focus goes back to it on close
   function openModal(title, body, actions) {
+    modalReturn = document.activeElement;
     $('modal-title').textContent = title;
     $('modal-body').replaceChildren(body);
     $('modal-actions').replaceChildren(...actions);
     $('modal').classList.remove('hidden');
     $('modal-body').querySelectorAll('select').forEach(enhanceSelect); // themed dropdown, same look in every browser
+    // Move focus into the dialog: first field, or (for confirmations) the safe Cancel button.
+    const first = $('modal-body').querySelector('input:not([type=hidden]):not([disabled]), textarea, .custom-select-trigger') || $('modal-actions').querySelector('button');
+    first?.focus({ preventScroll: true });
   }
-  const closeModal = () => $('modal').classList.add('hidden');
+  const closeModal = () => {
+    if ($('modal').classList.contains('hidden')) return;
+    $('modal').classList.add('hidden');
+    modalReturn?.focus?.({ preventScroll: true });
+    modalReturn = null;
+  };
+  // Keep Tab inside the open dialog (wrap first <-> last).
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Tab' || $('modal').classList.contains('hidden')) return;
+    const f = [...$('modal').querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')].filter((el) => !el.disabled && el.offsetParent !== null);
+    if (!f.length) return;
+    const first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  });
   $('modal').addEventListener('mousedown', (e) => { if (e.target === $('modal')) closeModal(); });
   // Escape closes an open dropdown first (it calls preventDefault); only then the dialog.
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !e.defaultPrevented) closeModal(); });

@@ -86,28 +86,28 @@ export function validateCreate(body: any, now = new Date()): CreateInput {
   const b = body && typeof body === 'object' ? body : {};
   const honeypot = typeof b.website === 'string' && b.website.trim() !== '';
   const name = typeof b.name === 'string' ? b.name.trim() : '';
-  if (!name || name.length > 100) throw bad('name is required (max 100 characters)');
+  if (!name || name.length > 100) throw bad('Please enter your name (up to 100 characters).');
   const phone = typeof b.phone === 'string' ? b.phone.replace(/[\s.\-()]/g, '') : '';
-  if (!/^\+?\d{8,15}$/.test(phone)) throw bad('phone number is invalid');
+  if (!/^\+?\d{8,15}$/.test(phone)) throw bad('Please enter a valid phone number, for example +855 12 345 678.');
   let email: string | null = null;
   if (b.email !== undefined && b.email !== null && String(b.email).trim() !== '') {
     email = String(b.email).trim();
-    if (email.length > 120 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw bad('email is invalid');
+    if (email.length > 120 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw bad('Please enter a valid email address, for example name@example.com, or leave it empty.');
   }
   const party = Number(b.party_size);
-  if (!Number.isInteger(party) || party < 1 || party > MAX_PARTY) throw bad(`party_size must be between 1 and ${MAX_PARTY}`);
+  if (!Number.isInteger(party) || party < 1 || party > MAX_PARTY) throw bad(`Please choose between 1 and ${MAX_PARTY} guests. For a bigger group, please call us.`);
   const date = parseDate(b.date);
-  if (!date) throw bad('date is invalid');
+  if (!date) throw bad('Please choose a valid date.');
   const today = nowInRestaurant(now);
   const ds = fmtDate(date);
-  if (ds < today.date) throw bad('date cannot be in the past');
+  if (ds < today.date) throw bad('Please choose today or a later date.');
   const limit = new Date(`${today.date}T00:00:00.000Z`); limit.setUTCDate(limit.getUTCDate() + MAX_DAYS_AHEAD);
-  if (date > limit) throw bad(`bookings open up to ${MAX_DAYS_AHEAD} days ahead`);
-  if (typeof b.time !== 'string' || !TIME_RE.test(b.time)) throw bad('time is invalid');
+  if (date > limit) throw bad(`We take bookings up to ${MAX_DAYS_AHEAD} days ahead. Please choose an earlier date.`);
+  if (typeof b.time !== 'string' || !TIME_RE.test(b.time)) throw bad('Please choose one of the available times.');
   let notes: string | null = null;
   if (b.notes !== undefined && b.notes !== null && String(b.notes).trim() !== '') {
     notes = String(b.notes).trim();
-    if (notes.length > 500) throw bad('notes are too long (max 500 characters)');
+    if (notes.length > 500) throw bad('Your note is a little long. Please keep it under 500 characters.');
   }
   return { name, phone, email, party_size: party, date, time: b.time, notes, honeypot };
 }

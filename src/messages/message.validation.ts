@@ -42,7 +42,7 @@ export function cleanPublicMessage(body: any): CleanMessage {
   const name = str(body.name, 'name', 100, true)!;
   const email = str(body.email, 'email', 254);
   const phone = str(body.phone, 'phone', 20);
-  if (!email && !phone) throw new BadRequestException('email or phone is required');
+  if (!email && !phone) throw new BadRequestException('Please give us an email address or a phone number so we can reply.');
   if (email && !EMAIL.test(email)) throw new BadRequestException('email is invalid');
   if (phone && !PHONE.test(phone)) throw new BadRequestException('phone is invalid');
   const subject = str(body.subject, 'subject', 150);
